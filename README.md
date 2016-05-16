@@ -91,18 +91,23 @@ class MyService
 List of Shortcuts
 -----------------
 
+### Getting users
+
 * `getUser()`: returns the current application user.
 * `getImpersonatingUser()`: when impersonating a user, it returns the original
   user who started the impersonation.
+
+### Checking permissions
+
 * `isGranted($attributes, $object = null)`: checks if the attributes (usually
   security roles) are granted for the current application user and the
   optionally given object.
-* `getLoginError()`: returns the error of the last failed login attempt, if any.
-* `getLoginUsername()`: returns the username of the last failed login attempt,
-  if any.
 * `hasRole($role, $user = null)`: returns `true` if the current application user
   (or the optionally given user) has the given role. It takes into account the
   full role hierarchy.
+
+### Types of users
+
 * `isAnonymous($user = null)`: returns `true` if the current application user (or
   the optionally given user) is anonymous. This behaves differently than Symfony
   built-in methods and it returns `true` only when the user is really anonymous.
@@ -116,8 +121,17 @@ List of Shortcuts
 * `isAuthenticated($user = null)`: returns `true` if the current application user
   (or the optionally given user) is authenticated in any way (because they have
   introduced their credentials (username and password) or they have been remembered).
+
+### Login
+
 * `login(UserInterface $user, $firewallName = 'main')`: it logs in the given user
   in the `main` application firewall (or the optionally given firewall name).
+* `getLoginError()`: returns the error of the last failed login attempt, if any.
+* `getLoginUsername()`: returns the username of the last failed login attempt,
+  if any.
+
+### Passwords
+
 * `encodePassword($plainPassword, $user = null)`: returns the given plain
   password encoded/hashed using the encoder of the current application user or
   the optionally given user.
