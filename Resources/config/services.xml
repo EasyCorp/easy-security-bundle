@@ -5,7 +5,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="security" class="EasySecurityBundle\Security">
+        <service id="security" class="EasyCorp\Bundle\EasySecurityBundle\Security\Security">
             <argument type="service" id="security.token_storage" />
             <argument type="service" id="security.authorization_checker" />
             <argument type="service" id="security.password_encoder" />
