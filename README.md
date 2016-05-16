@@ -42,15 +42,30 @@ Basic Usage
 
 Once installed, this bundle creates a new service called `security` in your
 Symfony application. This service provides lots of shortcuts for the most common
-security operations. For example, to get the current application user in a
-controller:
+security operations, so you don't have to remember the specific PHP classes
+which implement each feature:
 
 ```php
-// in a Symfony standard application
-$user = $this->get('security.token_storage')->getToken()->getUser();
+// Example 1: Getting the current user
 
-// with this bundle
+// default Symfony code
+$user = $this->get('security.token_storage')->getToken()->getUser();
+// this bundle
 $user = $this->get('security')->getUser();
+
+// Example 2: login a user programmatically
+
+// default Symfony code
+$user = ...
+$token = new UsernamePasswordToken($user, $user->getPassword(), 'main', $user->getRoles());
+$token->setAuthenticated(true);
+$this->tokenStorage->setToken($token);
+$this->session->set('_security_main', serialize($token));
+$this->session->save();
+
+// this bundle
+$user = ...
+$this->get('security')->login($user);
 ```
 
 These shortcuts can be used across your application if you inject the `security`
