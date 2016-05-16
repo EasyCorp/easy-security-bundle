@@ -27,7 +27,7 @@ class EasySecurityExtension extends Extension
         $loader->load('services.xml');
 
         $this->addClassesToCompile(array(
-            'EasySecurityBundle\\Security',
+            'EasyCorp\\Bundle\\EasySecurityBundle\\Security\\Security',
         ));
     }
 }
