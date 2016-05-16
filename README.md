@@ -41,15 +41,51 @@ Basic Usage
 -----------
 
 Once installed, this bundle creates a new service called `security` in your
-Symfony application. This service provides lots ot shortcuts for the most common
-security operations. For example, to get the current application user:
+Symfony application. This service provides lots of shortcuts for the most common
+security operations. For example, to get the current application user in a
+controller:
 
 ```php
-// in a Symfony controller
-$user = $this->get('security')->getUser();
+// in a Symfony standard application
+$user = $this->get('security.token_storage')->getToken()->getUser();
 
-// in a class where the 'security' service has been injected
-$user = $this->security->getUser();
+// with this bundle
+$user = $this->get('security')->getUser();
+```
+
+These shortcuts can be used across your application if you inject the `security`
+service. For example, if you define your services in YAML format:
+
+```yaml
+# app/config/services.yml
+services:
+    app.my_service:
+        # ...
+        arguments: ['@security']
+```
+
+Then, update the constructor of your service to get the `security` service:
+
+```php
+// src/AppBundle/MyService.php
+// ...
+use EasyCorp\Bundle\EasySecurityBundle\Security\Security;
+
+class MyService
+{
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
+    public function myMethod()
+    {
+        // ...
+        $user = $this->security->getUser();
+    }
+}
 ```
 
 List of Shortcuts
