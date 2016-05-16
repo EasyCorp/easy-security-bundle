@@ -10,7 +10,7 @@ Installation
 ### Step 1: Download the Bundle
 
 ```bash
-$ composer require ...
+$ composer require easycorp/easy-security-bundle
 ```
 
 This command requires you to have Composer installed globally, as explained
