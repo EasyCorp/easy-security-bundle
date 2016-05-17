@@ -120,9 +120,7 @@ class Security
     {
         $roleName = $role instanceof Role ? $role->getRole() : $role;
 
-        if (null === $user) {
-            $user = $this->tokenStorage->getToken()->getUser();
-        }
+        $user = $user ?: $this->getUser();
 
         if (!($user instanceof UserInterface)) {
             return false;
