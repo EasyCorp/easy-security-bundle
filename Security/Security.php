@@ -13,6 +13,7 @@ namespace EasyCorp\Bundle\EasySecurityBundle\Security;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
@@ -29,14 +30,54 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  */
 class Security
 {
+    /**
+     * @var TokenStorageInterface
+     */
     private $tokenStorage;
+
+    /**
+     * @var AuthorizationCheckerInterface
+     */
     private $authorizationChecker;
+
+    /**
+     * @var UserPasswordEncoder
+     */
     private $passwordEncoder;
+
+    /**
+     * @var AuthenticationUtils
+     */
     private $authenticationUtils;
+
+    /**
+     * @var Session
+     */
     private $session;
+
+    /**
+     * @var RoleHierarchy
+     */
     private $roleHierarchy;
 
-    public function __construct(TokenStorageInterface $tokenStorage, AuthorizationCheckerInterface $authorizationChecker, UserPasswordEncoder $passwordEncoder, AuthenticationUtils $authenticationUtils, Session $session, RoleHierarchy $roleHierarchy)
+    /**
+     * Security constructor.
+     *
+     * @param TokenStorageInterface         $tokenStorage
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param UserPasswordEncoder           $passwordEncoder
+     * @param AuthenticationUtils           $authenticationUtils
+     * @param Session                       $session
+     * @param RoleHierarchy                 $roleHierarchy
+     */
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        AuthorizationCheckerInterface $authorizationChecker,
+        UserPasswordEncoder $passwordEncoder,
+        AuthenticationUtils $authenticationUtils,
+        Session $session,
+        RoleHierarchy $roleHierarchy
+    )
     {
         $this->tokenStorage = $tokenStorage;
         $this->authorizationChecker = $authorizationChecker;
@@ -49,11 +90,17 @@ class Security
     /**
      * Returns the current application user.
      *
-     * @return mixed
+     * @return UserInterface|null
      */
-    public function getUser()
+    public function getUser() : ? UserInterface
     {
-        return $this->tokenStorage->getToken()->getUser();
+        $token = $this
+            ->tokenStorage
+            ->getToken();
+
+        return $token instanceof TokenInterface
+            ? $token->getUser()
+            : null;
     }
 
     /**
@@ -82,9 +129,14 @@ class Security
      *
      * @return bool
      */
-    public function isGranted($attributes, $object = null)
+    public function isGranted($attributes, $object = null) : bool
     {
-        return $this->authorizationChecker->isGranted($attributes, $object);
+        return $this
+            ->authorizationChecker
+            ->isGranted(
+                $attributes,
+                $object
+            );
     }
 
     /**
@@ -92,9 +144,11 @@ class Security
      *
      * @return AuthenticationException|null
      */
-    public function getLoginError()
+    public function getLoginError() : ? AuthenticationException
     {
-        return $this->authenticationUtils->getLastAuthenticationError();
+        return $this
+            ->authenticationUtils
+            ->getLastAuthenticationError();
     }
 
     /**
@@ -102,25 +156,27 @@ class Security
      *
      * @return string|null
      */
-    public function getLoginUsername()
+    public function getLoginUsername() : ? string
     {
-        return $this->authenticationUtils->getLastUsername();
+        return $this
+            ->authenticationUtils
+            ->getLastUsername();
     }
 
     /**
      * Returns true if the current application user (or the optionally given user)
      * has the given role. It takes into account the full role hierarchy.
      *
-     * @param $role
-     * @param null $user
+     * @param mixed         $role
+     * @param UserInterface $user
      *
      * @return bool
      */
-    public function hasRole($role, $user = null)
+    public function hasRole($role, UserInterface $user = null) : bool
     {
         $roleName = $role instanceof Role ? $role->getRole() : $role;
 
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
         if (!($user instanceof UserInterface)) {
             return false;
@@ -145,11 +201,11 @@ class Security
      * is anonymous. This behaves differently than Symfony built-in methods and
      * it returns true only when the user is really anonymous.
      *
-     * @param null $user
+     * @param UserInterface $user
      *
      * @return bool
      */
-    public function isAnonymous($user = null)
+    public function isAnonymous(UserInterface $user = null) : bool
     {
         return !$this->isAuthenticated($user);
     }
@@ -160,13 +216,13 @@ class Security
      * it returns true only when the user is really remembered and they haven't
      * introduced their credentials (username and password).
      *
-     * @param null $user
+     * @param UserInterface $user
      *
      * @return bool
      */
-    public function isRemembered($user = null)
+    public function isRemembered(UserInterface $user = null) : bool
     {
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
         if ($this->isFullyAuthenticated($user)) {
             return false;
@@ -180,13 +236,13 @@ class Security
      * is authenticated because they have introduced their credentials (username
      * and password).
      *
-     * @param null $user
+     * @param UserInterface $user
      *
      * @return bool
      */
-    public function isFullyAuthenticated($user = null)
+    public function isFullyAuthenticated(UserInterface $user = null) : bool
     {
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
         return $this->isGranted('IS_AUTHENTICATED_FULLY', $user);
     }
@@ -196,15 +252,17 @@ class Security
      * is authenticated in any way (because they have introduced their credentials
      * (username and password) or they have been remembered).
      *
-     * @param null $user
+     * @param UserInterface $user
      *
      * @return bool
      */
-    public function isAuthenticated($user = null)
+    public function isAuthenticated(UserInterface $user = null) : bool
     {
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
-        return $this->isGranted('IS_AUTHENTICATED_FULLY', $user) || $this->isGranted('IS_AUTHENTICATED_REMEMBERED', $user);
+        return
+            $this->isGranted('IS_AUTHENTICATED_FULLY', $user) ||
+            $this->isGranted('IS_AUTHENTICATED_REMEMBERED', $user);
     }
 
     /**
@@ -216,7 +274,10 @@ class Security
      *
      * @return UserInterface
      */
-    public function login(UserInterface $user, $firewallName = 'main')
+    public function login(
+        UserInterface $user,
+        string $firewallName = 'main'
+    ) : UserInterface
     {
         $token = new UsernamePasswordToken($user, $user->getPassword(), $firewallName, $user->getRoles());
         $token->setAuthenticated(true);
@@ -233,15 +294,23 @@ class Security
      * current application user or the optionally given user.
      *
      * @param string $plainPassword
-     * @param null   $user
+     * @param UserInterface   $user
      *
      * @return string
      */
-    public function encodePassword($plainPassword, $user = null)
+    public function encodePassword(
+        string $plainPassword,
+        UserInterface $user = null
+    ) : string
     {
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
-        return $this->passwordEncoder->encodePassword($user, $plainPassword);
+        return $this
+            ->passwordEncoder
+            ->encodePassword(
+                $user,
+                $plainPassword
+            );
     }
 
     /**
@@ -249,15 +318,23 @@ class Security
      * application user or the optionally given user.
      *
      * @param string $plainPassword
-     * @param null   $user
+     * @param UserInterface   $user
      *
      * @return bool
      */
-    public function isPasswordValid($plainPassword, $user = null)
+    public function isPasswordValid(
+        string $plainPassword,
+        UserInterface $user = null
+    ) : bool
     {
-        $user = $user ?: $this->getUser();
+        $user = $this->getUserToWorkWith($user);
 
-        return $this->passwordEncoder->isPasswordValid($user, $plainPassword);
+        return $this
+            ->passwordEncoder
+            ->isPasswordValid(
+                $user,
+                $plainPassword
+            );
     }
 
     /**
@@ -268,7 +345,7 @@ class Security
      *
      * @return RoleInterface[]
      */
-    private function getUserRolesAsObjects(UserInterface $user)
+    private function getUserRolesAsObjects(UserInterface $user) : array
     {
         $userRoles = array();
         foreach ($user->getRoles() as $userRole) {
@@ -276,5 +353,19 @@ class Security
         }
 
         return $userRoles;
+    }
+
+    /**
+     * Get the user to work with
+     *
+     * @param UserInterface|null $user
+     *
+     * @return null|UserInterface
+     */
+    private function getUserToWorkWith(?UserInterface $user) : ?UserInterface
+    {
+        return $user instanceof UserInterface
+            ? $user
+            : $this->getUser();
     }
 }
