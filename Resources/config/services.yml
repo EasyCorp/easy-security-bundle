@@ -1,0 +1,10 @@
+services:
+    security:
+        class: EasyCorp\Bundle\EasySecurityBundle\Security\Security
+        arguments:
+            - "@security.token_storage"
+            - "@security.authorization_checker"
+            - "@security.password_encoder"
+            - "@security.authentication_utils"
+            - "@session"
+            - "@security.role_hierarchy"

@@ -11,8 +11,22 @@
 
 namespace EasyCorp\Bundle\EasySecurityBundle;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Mmoreram\BaseBundle\SimpleBaseBundle;
 
-class EasySecurityBundle extends Bundle
+/**
+ * Class EasySecurityBundle
+ */
+class EasySecurityBundle extends SimpleBaseBundle
 {
+    /**
+     * get config files.
+     *
+     * @return array
+     */
+    public function getConfigFiles() : array
+    {
+        return [
+            'services.yml'
+        ];
+    }
 }
