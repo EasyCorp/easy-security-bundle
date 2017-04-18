@@ -219,7 +219,6 @@ class Security
     public function login(UserInterface $user, $firewallName = 'main')
     {
         $token = new UsernamePasswordToken($user, $user->getPassword(), $firewallName, $user->getRoles());
-        $token->setAuthenticated(true);
         $this->tokenStorage->setToken($token);
 
         $this->session->set('_security_'.$firewallName, serialize($token));
