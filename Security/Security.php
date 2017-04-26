@@ -11,7 +11,6 @@
 
 namespace EasyCorp\Bundle\EasySecurityBundle\Security;
 
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -33,16 +32,14 @@ class Security
     private $authorizationChecker;
     private $passwordEncoder;
     private $authenticationUtils;
-    private $session;
     private $roleHierarchy;
 
-    public function __construct(TokenStorageInterface $tokenStorage, AuthorizationCheckerInterface $authorizationChecker, UserPasswordEncoder $passwordEncoder, AuthenticationUtils $authenticationUtils, Session $session, RoleHierarchy $roleHierarchy)
+    public function __construct(TokenStorageInterface $tokenStorage, AuthorizationCheckerInterface $authorizationChecker, UserPasswordEncoder $passwordEncoder, AuthenticationUtils $authenticationUtils, RoleHierarchy $roleHierarchy)
     {
         $this->tokenStorage = $tokenStorage;
         $this->authorizationChecker = $authorizationChecker;
         $this->passwordEncoder = $passwordEncoder;
         $this->authenticationUtils = $authenticationUtils;
-        $this->session = $session;
         $this->roleHierarchy = $roleHierarchy;
     }
 
@@ -220,9 +217,6 @@ class Security
     {
         $token = new UsernamePasswordToken($user, $user->getPassword(), $firewallName, $user->getRoles());
         $this->tokenStorage->setToken($token);
-
-        $this->session->set('_security_'.$firewallName, serialize($token));
-        $this->session->save();
 
         return $user;
     }
