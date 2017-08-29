@@ -10,7 +10,6 @@
             <argument type="service" id="security.authorization_checker" />
             <argument type="service" id="security.password_encoder" />
             <argument type="service" id="security.authentication_utils" />
-            <argument type="service" id="session" />
             <argument type="service" id="security.role_hierarchy" on-invalid="null" />
         </service>
     </services>
