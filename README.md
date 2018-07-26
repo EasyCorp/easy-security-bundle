@@ -1,3 +1,9 @@
+-----
+
+# THIS BUNDLE IS NO LONGER MAINTAINED. SYMFONY 3.4 ADDED A [SIMILAR FEATURE](https://github.com/symfony/symfony/pull/24337) SO THIS IS NO LONGER NEEDED.
+
+-----
+
 EasySecurityBundle
 ==================
 
